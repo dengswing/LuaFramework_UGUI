@@ -1,5 +1,5 @@
 ManifestFileVersion: 0
-CRC: 415587262
+CRC: 911447662
 Hashes:
   AssetFileHash:
     serializedVersion: 2
@@ -14,5 +14,5 @@ ClassTypes:
 - Class: 213
   Script: {instanceID: 0}
 Assets:
-- Assets/LuaFramework/Examples/Textures/Prompt/1.png
+- Assets/AssetBundles/Textures/Prompt/1.png
 Dependencies: []

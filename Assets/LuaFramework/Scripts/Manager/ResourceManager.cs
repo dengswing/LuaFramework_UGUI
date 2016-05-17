@@ -102,29 +102,33 @@ namespace LuaFramework
         /// </summary>
         void LoadAsset<T>(string abName, string[] assetNames, Action<UObject[]> action = null, LuaFunction func = null) where T : UObject
         {
-#if UNITY_EDITOR
-            LoadResrouces<T>(assetNames, action, func);
-            return;
-#else
-            abName = GetRealAssetPath(abName);
-            LoadAssetRequest request = new LoadAssetRequest();
-            request.assetType = typeof(T);
-            request.assetNames = assetNames;
-            request.luaFunc = func;
-            request.sharpFunc = action;
-
-            List<LoadAssetRequest> requests = null;
-            if (!m_LoadRequests.TryGetValue(abName, out requests))
+            if (AppConst.DebugMode)
             {
-                requests = new List<LoadAssetRequest>();
-                requests.Add(request);
-                m_LoadRequests.Add(abName, requests);
-                StartCoroutine(OnLoadAsset<T>(abName));
+                LoadResrouces<T>(assetNames, action, func);
+                return;
             }
-            else {
-                requests.Add(request);
+            else
+            {
+                abName = GetRealAssetPath(abName);
+                LoadAssetRequest request = new LoadAssetRequest();
+                request.assetType = typeof(T);
+                request.assetNames = assetNames;
+                request.luaFunc = func;
+                request.sharpFunc = action;
+
+                List<LoadAssetRequest> requests = null;
+                if (!m_LoadRequests.TryGetValue(abName, out requests))
+                {
+                    requests = new List<LoadAssetRequest>();
+                    requests.Add(request);
+                    m_LoadRequests.Add(abName, requests);
+                    StartCoroutine(OnLoadAsset<T>(abName));
+                }
+                else {
+                    requests.Add(request);
+                }
             }
-#endif
+
         }
 
         void LoadResrouces<T>(string[] assetNames, Action<UObject[]> action = null, LuaFunction func = null) where T : UObject

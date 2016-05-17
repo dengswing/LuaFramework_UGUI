@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 506237164
+CRC: 1400009905
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 6afad7fcb8e2fe562a1468209983b069
+    Hash: c38b5d0f38910dc691c2fca754ed7151
   TypeTreeHash:
     serializedVersion: 2
     Hash: 1033bf7ddfd4c6d43e7a6382c0a0a61a
@@ -12,6 +12,6 @@ ClassTypes:
 - Class: 49
   Script: {instanceID: 0}
 Assets:
-- Assets/Lua/Controller/MessageCtrl.lua.bytes
 - Assets/Lua/Controller/PromptCtrl.lua.bytes
+- Assets/Lua/Controller/MessageCtrl.lua.bytes
 Dependencies: []
