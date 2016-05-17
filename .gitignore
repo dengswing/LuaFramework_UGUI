@@ -1,2 +1,6 @@
 Temp/
 Library/
+luaFrameworkUgui.CSharp.Editor.csproj
+luaFrameworkUgui.CSharp.csproj
+StreamingAssets/
+.vs/luaFrameworkUgui/v14/.suo

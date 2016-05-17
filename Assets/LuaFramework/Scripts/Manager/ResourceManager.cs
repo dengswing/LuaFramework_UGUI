@@ -3,6 +3,7 @@ using LuaInterface;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UObject = UnityEngine.Object;
 
@@ -73,7 +74,7 @@ namespace LuaFramework
             LoadAsset<GameObject>(abName, new string[] { assetNames }, null, func);
         }
 
-       internal string GetBundlePath(string path, out string assetName)
+        internal string GetBundlePath(string path, out string assetName)
         {
             var index = path.IndexOf("/") + 1;
             var end = path.LastIndexOf("/");
@@ -124,13 +125,13 @@ namespace LuaFramework
         /// </summary>
         void LoadAsset<T>(string abName, string[] assetNames, Action<UObject[]> action = null, LuaFunction func = null) where T : UObject
         {
-            //if (AppConst.DebugMode)
-            //{
-            //    LoadResrouces<T>(assetNames, action, func);
-            //    return;
-            //}
-            //else
-            //{
+            if (AppConst.DebugMode)
+            {
+                LoadResrouces<T>(abName, assetNames, action, func);
+                return;
+            }
+            else
+            {
                 abName = GetRealAssetPath(abName);
                 LoadAssetRequest request = new LoadAssetRequest();
                 request.assetType = typeof(T);
@@ -149,11 +150,11 @@ namespace LuaFramework
                 else {
                     requests.Add(request);
                 }
-            //}
+            }
 
         }
 
-        void LoadResrouces<T>(string[] assetNames, Action<UObject[]> action = null, LuaFunction func = null) where T : UObject
+        void LoadResrouces<T>(string abName, string[] assetNames, Action<UObject[]> action = null, LuaFunction func = null) where T : UObject
         {
             for (int j = 0; j < assetNames.Length; j++)
             {
@@ -164,7 +165,7 @@ namespace LuaFramework
                 {
                     Debug.LogFormat("load {0} resources Error", assetPath);
 
-                    var path = string.Format("Assets/LuaFramework/Examples/Builds/Prompt/{0}.prefab", assetPath);
+                    var path = string.Format("{0}/Builds/{1}/{2}.prefab", AppConst.AssetBundlePath, abName.Replace(AppConst.ExtName, ""), assetPath);
                     data = (T)UnityEditor.AssetDatabase.LoadMainAssetAtPath(path);
 
                     if (data == null) Debug.LogFormat("load {0} resources Error", path);
@@ -195,7 +196,7 @@ namespace LuaFramework
                 yield return StartCoroutine(OnLoadAssetBundle(abName, typeof(T)));
 
                 bundleInfo = GetLoadedAssetBundle(abName);
-                
+
                 if (bundleInfo == null)
                 {
                     m_LoadRequests.Remove(abName);
@@ -301,6 +302,8 @@ namespace LuaFramework
         public void UnloadAssetBundle(string abName)
         {
             abName = GetRealAssetPath(abName);
+            if (string.IsNullOrEmpty(abName)) return;
+
             Debug.Log(m_LoadedAssetBundles.Count + " assetbundle(s) in memory before unloading " + abName);
             UnloadAssetBundleInternal(abName);
             UnloadDependencies(abName);
