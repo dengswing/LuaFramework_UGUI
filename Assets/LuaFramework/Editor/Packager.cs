@@ -9,9 +9,6 @@ using Debug = UnityEngine.Debug;
 
 public class Packager
 {
-
-    const string ASSET_BUNDLE_PATH = "Assets/AssetBundles";
-
     public static string platform = string.Empty;
     static List<string> paths = new List<string>();
     static List<string> files = new List<string>();
@@ -198,9 +195,9 @@ public class Packager
           AddBuildMap("shared_asset" + AppConst.ExtName, "*.png", "Assets/LuaFramework/Examples/Textures/Shared");        
           */
 
-        if (!Directory.Exists(ASSET_BUNDLE_PATH))
+        if (!Directory.Exists(AppConst.AssetBundlePath))
         {
-            Debug.LogErrorFormat("File directory {0} does not exist!", ASSET_BUNDLE_PATH);
+            Debug.LogErrorFormat("File directory {0} does not exist!", AppConst.AssetBundlePath);
             return;
         }
 
@@ -215,7 +212,7 @@ public class Packager
     /// <param name="res"></param>
     static void AssetFileBuilds(string sFile, string res = "_asset")
     {
-        var gPath = Path.Combine(ASSET_BUNDLE_PATH, sFile);
+        var gPath = Path.Combine(AppConst.AssetBundlePath, sFile);
         if (!Directory.Exists(gPath))
         {
             Debug.LogErrorFormat("File directory {0} does not exist!", gPath);

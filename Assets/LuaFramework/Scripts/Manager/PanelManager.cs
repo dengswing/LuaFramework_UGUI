@@ -4,13 +4,18 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using LuaInterface;
 
-namespace LuaFramework {
-    public class PanelManager : Manager {
+namespace LuaFramework
+{
+    public class PanelManager : Manager
+    {
         private Transform parent;
 
-        Transform Parent {
-            get {
-                if (parent == null) {
+        Transform Parent
+        {
+            get
+            {
+                if (parent == null)
+                {
                     GameObject go = GameObject.FindWithTag("GuiCamera");
                     if (go != null) parent = go.transform;
                 }
@@ -23,17 +28,22 @@ namespace LuaFramework {
         /// <summary>
         /// 创建面板，请求资源管理器
         /// </summary>
-        /// <param name="type"></param>
-        public void CreatePanel(string name, LuaFunction func = null) {
-            string assetName = name + "Panel";
-            string abName = name.ToLower() + AppConst.ExtName;
+        /// <param name="type"> Asset下的路径</param>
+        public void CreatePanel(string path, LuaFunction func = null)
+        {
+            //string assetName = name + "Panel";
+            //string abName = name.ToLower() + AppConst.ExtName;
+            string assetName;
+            string abName = ResManager.GetBundlePath(path, out assetName);
 
-            ResManager.LoadPrefab(abName, assetName, delegate(UnityEngine.Object[] objs) {
+            ResManager.LoadPrefab(abName, assetName, delegate (UnityEngine.Object[] objs)
+            {
                 if (objs.Length == 0) return;
                 // Get the asset.
                 GameObject prefab = objs[0] as GameObject;
 
-                if (Parent.FindChild(name) != null || prefab == null) {
+                if (Parent.FindChild(name) != null || prefab == null)
+                {
                     return;
                 }
                 GameObject go = Instantiate(prefab) as GameObject;
@@ -47,7 +57,7 @@ namespace LuaFramework {
                 if (func != null) func.Call(go);
                 Debug.LogWarning("CreatePanel::>> " + name + " " + prefab);
             });
-        }
+        }        
 #else
         /// <summary>
         /// 创建面板，请求资源管理器

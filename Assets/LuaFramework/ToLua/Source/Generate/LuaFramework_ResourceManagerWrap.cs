@@ -9,6 +9,7 @@ public class LuaFramework_ResourceManagerWrap
 		L.BeginClass(typeof(LuaFramework.ResourceManager), typeof(Manager));
 		L.RegFunction("Initialize", Initialize);
 		L.RegFunction("LoadPrefab", LoadPrefab);
+		L.RegFunction("LoadPathPrefab", LoadPathPrefab);
 		L.RegFunction("UnloadAssetBundle", UnloadAssetBundle);
 		L.RegFunction("__eq", op_Equality);
 		L.RegFunction("__tostring", Lua_ToString);
@@ -107,6 +108,24 @@ public class LuaFramework_ResourceManagerWrap
 			{
 				return LuaDLL.luaL_throw(L, "invalid arguments to method: LuaFramework.ResourceManager.LoadPrefab");
 			}
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int LoadPathPrefab(IntPtr L)
+	{
+		try
+		{
+			ToLua.CheckArgsCount(L, 3);
+			LuaFramework.ResourceManager obj = (LuaFramework.ResourceManager)ToLua.CheckObject(L, 1, typeof(LuaFramework.ResourceManager));
+			string arg0 = ToLua.CheckString(L, 2);
+			LuaFunction arg1 = ToLua.CheckLuaFunction(L, 3);
+			obj.LoadPathPrefab(arg0, arg1);
+			return 0;
 		}
 		catch(Exception e)
 		{

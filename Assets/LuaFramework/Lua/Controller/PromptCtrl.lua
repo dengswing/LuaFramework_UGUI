@@ -23,7 +23,8 @@ end
 
 function PromptCtrl.Awake()
 	logWarn("PromptCtrl.Awake--->>");
-	panelMgr:CreatePanel('Prompt', this.OnCreate);
+	--panelMgr:CreatePanel('Prompt', this.OnCreate);
+	panelMgr:CreatePanel('Builds/Prompt/PromptPanel', this.OnCreate);
 end
 
 --启动事件--
@@ -35,8 +36,13 @@ function PromptCtrl.OnCreate(obj)
 	prompt = transform:GetComponent('LuaBehaviour');
 	logWarn("Start lua--->>"..gameObject.name);
 
+logWarn("Start lua-fdafd-->>"..obj);
+
+logWarn("Start lua-fdafd-->>"..prompt);
+
 	prompt:AddClick(PromptPanel.btnOpen, this.OnClick);
-	resMgr:LoadPrefab('prompt', { 'PromptItem' }, this.InitPanel);
+	--resMgr:LoadPrefab('prompt', { 'PromptItem' }, this.InitPanel);
+	resMgr:LoadPathPrefab('Builds/Prompt/PromptItem', this.InitPanel);
 end
 
 --初始化面板--

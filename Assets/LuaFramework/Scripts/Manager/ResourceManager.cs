@@ -1,10 +1,9 @@
 ﻿#if ASYNC_MODE
-using UnityEngine;
+using LuaInterface;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System;
-using System.IO;
-using LuaInterface;
+using UnityEngine;
 using UObject = UnityEngine.Object;
 
 public class AssetBundleInfo
@@ -67,6 +66,29 @@ namespace LuaFramework
             LoadAsset<GameObject>(abName, assetNames, null, func);
         }
 
+        public void LoadPathPrefab(string path, LuaFunction func)
+        {
+            string assetNames;
+            var abName = GetBundlePath(path, out assetNames);
+            LoadAsset<GameObject>(abName, new string[] { assetNames }, null, func);
+        }
+
+       internal string GetBundlePath(string path, out string assetName)
+        {
+            var index = path.IndexOf("/") + 1;
+            var end = path.LastIndexOf("/");
+            if (end < 0)
+            {
+                Debug.LogError("Introduced into the wrong path!");
+                assetName = null;
+                return null;
+            }
+
+            var abName = path.Substring(index, end - index) + AppConst.ExtName;
+            assetName = path.Substring(end + 1);
+            return abName.ToLower();
+        }
+
         string GetRealAssetPath(string abName)
         {
             if (abName.Equals(AppConst.AssetDir))
@@ -102,13 +124,13 @@ namespace LuaFramework
         /// </summary>
         void LoadAsset<T>(string abName, string[] assetNames, Action<UObject[]> action = null, LuaFunction func = null) where T : UObject
         {
-            if (AppConst.DebugMode)
-            {
-                LoadResrouces<T>(assetNames, action, func);
-                return;
-            }
-            else
-            {
+            //if (AppConst.DebugMode)
+            //{
+            //    LoadResrouces<T>(assetNames, action, func);
+            //    return;
+            //}
+            //else
+            //{
                 abName = GetRealAssetPath(abName);
                 LoadAssetRequest request = new LoadAssetRequest();
                 request.assetType = typeof(T);
@@ -127,7 +149,7 @@ namespace LuaFramework
                 else {
                     requests.Add(request);
                 }
-            }
+            //}
 
         }
 
@@ -173,10 +195,10 @@ namespace LuaFramework
                 yield return StartCoroutine(OnLoadAssetBundle(abName, typeof(T)));
 
                 bundleInfo = GetLoadedAssetBundle(abName);
+                
                 if (bundleInfo == null)
                 {
                     m_LoadRequests.Remove(abName);
-                    Debug.LogError("OnLoadAsset--->>>" + abName);
                     yield break;
                 }
             }

@@ -16,6 +16,7 @@ public class LuaFramework_AppConstWrap
 		L.RegConstant("LuaBundleMode", 1);
 		L.RegConstant("TimerInterval", 1);
 		L.RegConstant("GameFrameRate", 30);
+		L.RegVar("AssetBundlePath", get_AssetBundlePath, null);
 		L.RegVar("AppName", get_AppName, null);
 		L.RegVar("LuaTempDir", get_LuaTempDir, null);
 		L.RegVar("AppPrefix", get_AppPrefix, null);
@@ -67,6 +68,13 @@ public class LuaFramework_AppConstWrap
 			LuaDLL.lua_pushnil(L);
 		}
 
+		return 1;
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int get_AssetBundlePath(IntPtr L)
+	{
+		LuaDLL.lua_pushstring(L, LuaFramework.AppConst.AssetBundlePath);
 		return 1;
 	}
 
