@@ -3,7 +3,6 @@ using LuaInterface;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 using UObject = UnityEngine.Object;
 
@@ -67,27 +66,85 @@ namespace LuaFramework
             LoadAsset<GameObject>(abName, assetNames, null, func);
         }
 
-        public void LoadPathPrefab(string path, LuaFunction func)
+        public void LoadPathPrefab(string path, Action<UObject[]> func)
         {
-            string assetNames;
-            var abName = GetBundlePath(path, out assetNames);
-            LoadAsset<GameObject>(abName, new string[] { assetNames }, null, func);
+            LoadPathPrefab<GameObject>(path, func);
         }
 
-        internal string GetBundlePath(string path, out string assetName)
+        public void LoadPathPrefab<T>(string path, Action<UObject[]> func) where T : UObject
         {
-            var index = path.IndexOf("/") + 1;
-            var end = path.LastIndexOf("/");
-            if (end < 0)
+            LoadAssetPrefab<T>(path, func, null);
+        }
+
+        public void LoadPathPrefab(string path, LuaFunction func)
+        {
+            LoadAssetPrefab<GameObject>(path, null, func);
+        }
+
+        internal string GetAssetName(string path)
+        {
+            string assetName;
+            string directory;
+            string ext;
+            GetBundlePath(path, out assetName, out ext, out directory);
+            return assetName;
+        }
+
+        void LoadAssetPrefab<T>(string path, Action<UObject[]> action, LuaFunction func) where T : UObject
+        {
+            string assetName;
+            string directory;
+            string ext;
+            var abName = GetBundlePath(path, out assetName, out ext, out directory);
+#if UNITY_EDITOR
+            if (AppConst.DebugMode)
+            {
+                LoadResrouces<T>(abName, new string[] { assetName }, action, func, directory, ext);
+            }
+            else
+            {
+                LoadAsset<T>(abName, new string[] { assetName }, action, func);
+            }
+#else
+            LoadAsset<T>(abName, new string[] { assetName }, action, func);
+#endif
+        }
+
+        string GetBundlePath(string path, out string assetName, out string ext, out string directory)
+        {
+            assetName = string.Empty;
+            directory = string.Empty;
+            ext = ".prefab";
+            string bundleName = string.Empty;
+
+            var content = path.Split(new char[] { '/', '.' });
+            var count = content.Length;
+            if (count == 0)
             {
                 Debug.LogError("Introduced into the wrong path!");
-                assetName = null;
-                return null;
+                return string.Empty;
             }
 
-            var abName = path.Substring(index, end - index) + AppConst.ExtName;
-            assetName = path.Substring(end + 1);
-            return abName.ToLower();
+            for (int i = 0; i < count; i++)
+            {
+                switch (i)
+                {
+                    case 0:
+                        directory = content[i];
+                        break;
+                    case 1:
+                        bundleName = content[i].ToLower() + AppConst.ExtName;
+                        break;
+                    case 2:
+                        assetName = content[i];
+                        break;
+                    case 3:
+                        ext = content[i];
+                        break;
+                }
+            }
+
+            return bundleName;
         }
 
         string GetRealAssetPath(string abName)
@@ -125,36 +182,27 @@ namespace LuaFramework
         /// </summary>
         void LoadAsset<T>(string abName, string[] assetNames, Action<UObject[]> action = null, LuaFunction func = null) where T : UObject
         {
-            if (AppConst.DebugMode)
-            {
-                LoadResrouces<T>(abName, assetNames, action, func);
-                return;
-            }
-            else
-            {
-                abName = GetRealAssetPath(abName);
-                LoadAssetRequest request = new LoadAssetRequest();
-                request.assetType = typeof(T);
-                request.assetNames = assetNames;
-                request.luaFunc = func;
-                request.sharpFunc = action;
+            abName = GetRealAssetPath(abName);
+            LoadAssetRequest request = new LoadAssetRequest();
+            request.assetType = typeof(T);
+            request.assetNames = assetNames;
+            request.luaFunc = func;
+            request.sharpFunc = action;
 
-                List<LoadAssetRequest> requests = null;
-                if (!m_LoadRequests.TryGetValue(abName, out requests))
-                {
-                    requests = new List<LoadAssetRequest>();
-                    requests.Add(request);
-                    m_LoadRequests.Add(abName, requests);
-                    StartCoroutine(OnLoadAsset<T>(abName));
-                }
-                else {
-                    requests.Add(request);
-                }
+            List<LoadAssetRequest> requests = null;
+            if (!m_LoadRequests.TryGetValue(abName, out requests))
+            {
+                requests = new List<LoadAssetRequest>();
+                requests.Add(request);
+                m_LoadRequests.Add(abName, requests);
+                StartCoroutine(OnLoadAsset<T>(abName));
             }
-
+            else {
+                requests.Add(request);
+            }
         }
 
-        void LoadResrouces<T>(string abName, string[] assetNames, Action<UObject[]> action = null, LuaFunction func = null) where T : UObject
+        void LoadResrouces<T>(string abName, string[] assetNames, Action<UObject[]> action = null, LuaFunction func = null, string directory = "Builds", string ext = ".prefab") where T : UObject
         {
             for (int j = 0; j < assetNames.Length; j++)
             {
@@ -165,7 +213,7 @@ namespace LuaFramework
                 {
                     Debug.LogFormat("load {0} resources Error", assetPath);
 
-                    var path = string.Format("{0}/Builds/{1}/{2}.prefab", AppConst.AssetBundlePath, abName.Replace(AppConst.ExtName, ""), assetPath);
+                    var path = string.Format("{0}/{1}/{2}/{3}{4}", AppConst.AssetBundlePath, directory, abName.Replace(AppConst.ExtName, ""), assetPath, ext);
                     data = (T)UnityEditor.AssetDatabase.LoadMainAssetAtPath(path);
 
                     if (data == null) Debug.LogFormat("load {0} resources Error", path);
