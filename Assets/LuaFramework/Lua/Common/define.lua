@@ -1,12 +1,22 @@
 
 CtrlNames = {
+	--之前定义--
 	Prompt = "PromptCtrl",
-	Message = "MessageCtrl"
+	Message = "MessageCtrl",
+	--Sample--
+	Sample = "SampleCtrl",
+	--Menu--
+	Menu = "MenuCtrl"
 }
 
 PanelNames = {
+	--之前定义--
 	"PromptPanel",	
 	"MessagePanel",
+	--Sample--
+	"SamplePanel",
+	--Menu--
+	"MenuPanel"
 }
 
 --协议类型--

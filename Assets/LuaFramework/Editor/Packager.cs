@@ -34,7 +34,7 @@ public class Packager
         return AssetDatabase.LoadMainAssetAtPath("Assets/LuaFramework/Examples/Builds/" + file);
     }
 
-    [MenuItem("LuaFramework/Build iPhone Resource", false, 100)]
+    [MenuItem("LuaFramework/Build IOS Resource", false, 100)]
     public static void BuildiPhoneResource()
     {
         BuildTarget target;
@@ -63,40 +63,64 @@ public class Packager
     /// </summary>
     public static void BuildAssetResource(BuildTarget target)
     {
-        if (Directory.Exists(Util.DataPath))
-        {
-            Directory.Delete(Util.DataPath, true);
-        }
         string streamPath = Application.streamingAssetsPath;
-        if (Directory.Exists(streamPath))
-        {
-            Directory.Delete(streamPath, true);
-        }
-        Directory.CreateDirectory(streamPath);
+        if (!Directory.Exists(streamPath)) Directory.CreateDirectory(streamPath);
+
+        string platform = GetPlatformFolder(target);
+        string resPath = "Assets/" + platform;
+        if (Directory.Exists(resPath)) Directory.Delete(resPath, true);
+        Directory.CreateDirectory(resPath);
         AssetDatabase.Refresh();
 
         maps.Clear();
         if (AppConst.LuaBundleMode)
         {
-            HandleLuaBundle();
+            HandleLuaBundle(platform);
         }
         else {
-            HandleLuaFile();
+            HandleLuaFile(platform);
         }
         if (AppConst.ExampleMode)
         {
             HandleExampleBundle();
         }
-        string resPath = "Assets/" + AppConst.AssetDir;
+
         BuildAssetBundleOptions options = BuildAssetBundleOptions.DeterministicAssetBundle |
                                           BuildAssetBundleOptions.UncompressedAssetBundle;
         BuildPipeline.BuildAssetBundles(resPath, maps.ToArray(), options, target);
-        BuildFileIndex();
+        BuildFileIndex(platform);
 
         string streamDir = Application.dataPath + "/" + AppConst.LuaTempDir;
         if (Directory.Exists(streamDir)) Directory.Delete(streamDir, true);
+
+        Debug.LogFormat("打包完成 {0}", resPath);
+
         AssetDatabase.Refresh();
     }
+
+#if UNITY_EDITOR
+    static string GetPlatformFolder(BuildTarget target)
+    {
+        switch (target)
+        {
+            case BuildTarget.Android:
+                return "StreamingAssets/Android";
+            case BuildTarget.iOS:
+                return "StreamingAssets/IOS";
+            case BuildTarget.WebPlayer:
+                return "StreamingAssets/WebPlayer";
+            case BuildTarget.StandaloneWindows:
+            case BuildTarget.StandaloneWindows64:
+                return "StreamingAssets/Windows";
+            case BuildTarget.StandaloneOSXIntel:
+            case BuildTarget.StandaloneOSXIntel64:
+            case BuildTarget.StandaloneOSXUniversal:
+                return "StreamingAssets/OSX";
+            default:
+                return "StreamingAssets";
+        }
+    }
+#endif
 
     static void AddBuildMap(string bundleName, string pattern, string path)
     {
@@ -116,7 +140,7 @@ public class Packager
     /// <summary>
     /// 处理Lua代码包
     /// </summary>
-    static void HandleLuaBundle()
+    static void HandleLuaBundle(string platform)
     {
         string streamDir = Application.dataPath + "/" + AppConst.LuaTempDir;
         if (!Directory.Exists(streamDir)) Directory.CreateDirectory(streamDir);
@@ -160,7 +184,7 @@ public class Packager
         AddBuildMap("lua/lua" + AppConst.ExtName, "*.bytes", "Assets/" + AppConst.LuaTempDir);
 
         //-------------------------------处理非Lua文件----------------------------------
-        string luaPath = AppDataPath + "/StreamingAssets/lua/";
+        string luaPath = string.Format("{0}/{1}/lua/", Application.dataPath, platform);
         for (int i = 0; i < srcDirs.Length; i++)
         {
             paths.Clear(); files.Clear();
@@ -185,9 +209,6 @@ public class Packager
     /// </summary>
     static void HandleExampleBundle()
     {
-        string resPath = AppDataPath + "/" + AppConst.AssetDir + "/";
-        if (!Directory.Exists(resPath)) Directory.CreateDirectory(resPath);
-
         /* AddBuildMap("prompt" + AppConst.ExtName, "*.prefab", "Assets/LuaFramework/Examples/Builds/Prompt");
           AddBuildMap("message" + AppConst.ExtName, "*.prefab", "Assets/LuaFramework/Examples/Builds/Message");
 
@@ -232,9 +253,9 @@ public class Packager
     /// <summary>
     /// 处理Lua文件
     /// </summary>
-    static void HandleLuaFile()
+    static void HandleLuaFile(string platform)
     {
-        string resPath = AppDataPath + "/StreamingAssets/";
+        string resPath = string.Format("{0}/{1}/", AppDataPath,platform);
         string luaPath = resPath + "/lua/";
 
         //----------复制Lua文件----------------
@@ -263,6 +284,7 @@ public class Packager
                 {
                     File.Delete(newpath);
                 }
+
                 if (AppConst.LuaByteMode)
                 {
                     EncodeLuaFile(f, newpath);
@@ -277,11 +299,11 @@ public class Packager
         AssetDatabase.Refresh();
     }
 
-    static void BuildFileIndex()
+    static void BuildFileIndex(string platform)
     {
-        string resPath = AppDataPath + "/StreamingAssets/";
+        string resPath = string.Format("{0}/{1}/", AppDataPath, platform);
         ///----------------------创建文件列表-----------------------
-        string newFilePath = resPath + "/files.txt";
+        string newFilePath = resPath + "/" + AppConst.VersionFile;
         if (File.Exists(newFilePath)) File.Delete(newFilePath);
 
         paths.Clear(); files.Clear();

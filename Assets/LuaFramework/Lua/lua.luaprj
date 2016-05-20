@@ -49,6 +49,8 @@
     <Filter Name="Controller" >
         <LuaFile RelativePath=".\Controller\MessageCtrl.lua" />
         <LuaFile RelativePath=".\Controller\PromptCtrl.lua" />
+        <LuaFile RelativePath=".\Controller\SampleCtrl.lua" />
+        <LuaFile RelativePath=".\Controller\MenuCtrl.lua" />
     </Filter>
     <Filter Name="Logic" >
         <LuaFile RelativePath=".\Logic\CtrlManager.lua" />
@@ -59,5 +61,7 @@
     <Filter Name="View" >
         <LuaFile RelativePath=".\View\MessagePanel.lua" />
         <LuaFile RelativePath=".\View\PromptPanel.lua" />
+        <LuaFile RelativePath=".\View\SamplePanel.lua" />
+        <LuaFile RelativePath=".\View\MenuPanel.lua" />
     </Filter>
 </Project>

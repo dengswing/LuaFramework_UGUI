@@ -14,7 +14,8 @@ require "Logic/LuaClass"
 require "Logic/CtrlManager"
 require "Common/functions"
 require "Controller/PromptCtrl"
-
+require "Controller/SampleCtrl"
+require "Controller/MenuCtrl"
 --管理器--
 Game = {};
 local this = Game;
@@ -48,8 +49,16 @@ function Game.OnInitOK()
     coroutine.start(this.test_coroutine);
 
     CtrlManager.Init();
-    local ctrl = CtrlManager.GetCtrl(CtrlNames.Prompt);
+	--Sample 界面--
+    local ctrl = CtrlManager.GetCtrl(CtrlNames.Sample);
     if ctrl ~= nil and AppConst.ExampleMode then
+	    logWarn('Sample Awake--->>>');
+        ctrl:Awake();
+    end
+	--Menu 界面--
+	ctrl = CtrlManager.GetCtrl(CtrlNames.Menu);
+    if ctrl ~= nil and AppConst.ExampleMode then
+	    logWarn('Menu Awake--->>>');
         ctrl:Awake();
     end
        

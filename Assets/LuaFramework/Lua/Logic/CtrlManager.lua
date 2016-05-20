@@ -10,6 +10,8 @@ function CtrlManager.Init()
 	logWarn("CtrlManager.Init----->>>");
 	ctrlList[CtrlNames.Prompt] = PromptCtrl.New();
 	ctrlList[CtrlNames.Message] = MessageCtrl.New();
+	ctrlList[CtrlNames.Sample] = SampleCtrl.New();
+	ctrlList[CtrlNames.Menu] = MenuCtrl.New();
 	return this;
 end
 

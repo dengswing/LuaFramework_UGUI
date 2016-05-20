@@ -28,6 +28,7 @@ namespace LuaFramework
         Dictionary<string, string[]> m_Dependencies = new Dictionary<string, string[]>();
         Dictionary<string, AssetBundleInfo> m_LoadedAssetBundles = new Dictionary<string, AssetBundleInfo>();
         Dictionary<string, List<LoadAssetRequest>> m_LoadRequests = new Dictionary<string, List<LoadAssetRequest>>();
+        Dictionary<string, int> loadingAssetBundles = new Dictionary<string, int>();
 
         class LoadAssetRequest
         {
@@ -41,6 +42,7 @@ namespace LuaFramework
         public void Initialize(string manifestName, Action initOK)
         {
             m_BaseDownloadingURL = Util.GetRelativePath();
+
             LoadAsset<AssetBundleManifest>(manifestName, new string[] { "AssetBundleManifest" }, delegate (UObject[] objs)
             {
                 if (objs.Length > 0)
@@ -149,7 +151,7 @@ namespace LuaFramework
 
         string GetRealAssetPath(string abName)
         {
-            if (abName.Equals(AppConst.AssetDir))
+            if (abName.Equals(AppConst.PlatformFile))
             {
                 return abName;
             }
@@ -208,7 +210,7 @@ namespace LuaFramework
             {
                 string assetPath = assetNames[j];
                 T data = Resources.Load<T>(assetPath);
-
+#if UNITY_EDIOR
                 if (null == data)
                 {
                     Debug.LogFormat("load {0} resources Error", assetPath);
@@ -218,7 +220,7 @@ namespace LuaFramework
 
                     if (data == null) Debug.LogFormat("load {0} resources Error", path);
                 }
-
+#else
                 List<UObject> result = new List<UObject>();
                 result.Add(data);
 
@@ -234,6 +236,7 @@ namespace LuaFramework
                     func = null;
                 }
             }
+#endif
         }
 
         IEnumerator OnLoadAsset<T>(string abName) where T : UObject
@@ -295,8 +298,10 @@ namespace LuaFramework
 
             WWW download = null;
             if (type == typeof(AssetBundleManifest))
+            {
+                Debug.LogFormat("WWW Path={0}", url);
                 download = new WWW(url);
-            else {
+            } else {
                 string[] dependencies = m_AssetBundleManifest.GetAllDependencies(abName);
                 if (dependencies.Length > 0)
                 {
@@ -315,7 +320,18 @@ namespace LuaFramework
                         }
                     }
                 }
-                download = WWW.LoadFromCacheOrDownload(url, m_AssetBundleManifest.GetAssetBundleHash(abName), 0);
+
+                Debug.LogFormat("WWW.LoadFromCacheOrDownload Path={0}", url);
+
+                if (!loadingAssetBundles.ContainsKey(url))
+                {
+                    download = WWW.LoadFromCacheOrDownload(url, m_AssetBundleManifest.GetAssetBundleHash(abName), 0);
+                    loadingAssetBundles.Add(url, 1);
+                }
+                else
+                {
+                    yield break;
+                }
             }
             yield return download;
 
