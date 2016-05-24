@@ -34,8 +34,8 @@ public class Packager
         return AssetDatabase.LoadMainAssetAtPath("Assets/LuaFramework/Examples/Builds/" + file);
     }
 
-    [MenuItem("LuaFramework/Build IOS Resource", false, 100)]
-    public static void BuildiPhoneResource()
+    [MenuItem("LuaFramework/BuildIOSResource", false, 100)]
+    public static void BuildIOSResource()
     {
         BuildTarget target;
 #if UNITY_5
@@ -46,13 +46,13 @@ public class Packager
         BuildAssetResource(target);
     }
 
-    [MenuItem("LuaFramework/Build Android Resource", false, 101)]
+    [MenuItem("LuaFramework/BuildAndroidResource", false, 101)]
     public static void BuildAndroidResource()
     {
         BuildAssetResource(BuildTarget.Android);
     }
 
-    [MenuItem("LuaFramework/Build Windows Resource", false, 102)]
+    [MenuItem("LuaFramework/BuildWindowsResource", false, 102)]
     public static void BuildWindowsResource()
     {
         BuildAssetResource(BuildTarget.StandaloneWindows);
